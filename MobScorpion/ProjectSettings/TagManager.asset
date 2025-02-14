@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Player1
+  - Player2
+  - Shield
+  - Enemy
+  - Wall Entity
+  - Player-1
+  - Player-2
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - Projectiles
+  - Entities
+  - Sensors
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Floor
+    uniqueID: 3050443421
+    locked: 0
+  - name: Decals
+    uniqueID: 362669747
+    locked: 0
+  - name: Walls
+    uniqueID: 2215011697
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Player
+    uniqueID: 431133389
+    locked: 0
+  - name: Dead
+    uniqueID: 2302786627
+    locked: 0
