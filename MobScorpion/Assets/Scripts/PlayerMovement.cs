@@ -29,32 +29,50 @@ public class PlayerMovement : MonoBehaviour
     {
         MovePlayer();
     }
+    
+void MovePlayer()
+{
+    // Get keyboard input
+    float moveX = Input.GetAxisRaw("Horizontal");
+    float moveY = Input.GetAxisRaw("Vertical");
 
-    void MovePlayer()
+    // Get joystick input
+    float joystickX = joystick.Horizontal;
+    float joystickY = joystick.Vertical;
+
+    // Prioritize joystick input if it is active
+    Vector2 movement;
+    if (Mathf.Abs(joystickX) > 0.1f || Mathf.Abs(joystickY) > 0.1f)
     {
-        Vector2 movement = new Vector2(joystick.Horizontal, joystick.Vertical);
+        movement = new Vector2(joystickX, joystickY);
+    }
+    else
+    {
+        movement = new Vector2(moveX, moveY);
+    }
 
-        if (movement.magnitude > 0.1f) // Small threshold to prevent micro-movements
+    if (movement.magnitude > 0.1f) // Small threshold to prevent micro-movements
+    {
+        movement.Normalize();
+        rb.velocity = movement * moveSpeed;
+
+        if (!isAttacking)
+            lastFacingDirection = movement;
+
+        HandleAnimations(movement);
+
+        if (movement.x != 0)
         {
-            movement.Normalize();
-            rb.velocity = movement * moveSpeed;
-            
-            if (!isAttacking)
-                lastFacingDirection = movement;
-
-            HandleAnimations(movement);
-
-            if (movement.x != 0)
-            {
-                rend.flipX = movement.x > 0;
-            }
-        }
-        else
-        {
-            rb.velocity = Vector2.zero;
-            HandleIdleAnimations();
+            rend.flipX = movement.x > 0;
         }
     }
+    else
+    {
+        rb.velocity = Vector2.zero;
+        HandleIdleAnimations();
+    }
+}
+
 
     void HandleAnimations(Vector2 movement)
     {

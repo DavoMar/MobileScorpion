@@ -5,5 +5,5 @@ using TMPro;
 
 public class KeyManager : MonoBehaviour
 {
-    
+
 }
