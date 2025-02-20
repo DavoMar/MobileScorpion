@@ -75,14 +75,18 @@ void MovePlayer()
 
 
     void HandleAnimations(Vector2 movement)
-    {
-        animator.SetBool("moveUp", false);
-        animator.SetBool("moveDown", false);
-        animator.SetBool("moveSide", false);
-        animator.SetBool("moveUpRight", false);
-        animator.SetBool("moveUpLeft", false);
-        animator.SetFloat("moveSpeed", 1);
+{
+    animator.SetBool("moveUp", false);
+    animator.SetBool("moveDown", false);
+    animator.SetBool("moveSide", false);
+    animator.SetBool("moveUpRight", false);
+    animator.SetBool("moveUpLeft", false);
+    animator.SetFloat("moveSpeed", 1);
 
+    float diagonalThreshold = 0.5f; // Adjust this value if needed
+
+    if (Mathf.Abs(movement.y) > diagonalThreshold * Mathf.Abs(movement.x))
+    {
         if (movement.y > 0 && movement.x > 0)
         {
             animator.SetBool("moveUpRight", true);
@@ -99,11 +103,16 @@ void MovePlayer()
         {
             animator.SetBool("moveDown", true);
         }
-        else if (movement.x != 0)
+    }
+    else
+    {
+        if (movement.x != 0)
         {
             animator.SetBool("moveSide", true);
         }
     }
+}
+
 
     void HandleIdleAnimations()
     {

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class SceneTransitionTrigger : MonoBehaviour
 {
     public Image fadeImage;              // Assign your full-screen black Image here
-    public float fadeDuration = 1f;      // Duration of the fade effect
+    public float fadeDuration = 0.7f;      // Duration of the fade effect
     public string sceneToLoad;           // Name of the scene to load
 
     private bool isFading = false;
