@@ -10,6 +10,7 @@ public class ArrowShooter : MonoBehaviour
     public float shootCooldown = 0.5f; // Time between shots
     private float lastShootTime = 0f; // Last time the player shot an arrow
     private bool isShooting = false;
+    private bool isShootButtonHeld = false; // Track UI button press
 
     private PlayerMovement playerMovement;
 
@@ -26,10 +27,12 @@ public class ArrowShooter : MonoBehaviour
             isShooting = false;
             playerMovement.isAttacking = false;
         }
-        if (Input.GetKey(shootButton) && !isShooting && !playerMovement.isAttacking)
+
+        // Check if either the keyboard or the UI button is pressed
+        if ((Input.GetKey(shootButton) || isShootButtonHeld) && !isShooting && !playerMovement.isAttacking)
         {
-            ShootArrow(); // Call the ShootArrow method
-            lastShootTime = Time.time; // Update last shoot time
+            ShootArrow();
+            lastShootTime = Time.time;
             playerMovement.isAttacking = true;
             isShooting = true;
         }
@@ -55,6 +58,17 @@ public class ArrowShooter : MonoBehaviour
         arrowComponent.IncreaseDamage(playerMovement.GetArrowDamage());
 
         // Assign the player ID to the arrow
-        arrowComponent.playerID = playerMovement.playerID; // Set the playerID for the arrow
+        arrowComponent.playerID = playerMovement.playerID;
+    }
+
+    // UI Button Functions
+    public void ShootButtonDown()
+    {
+        isShootButtonHeld = true;
+    }
+
+    public void ShootButtonUp()
+    {
+        isShootButtonHeld = false;
     }
 }

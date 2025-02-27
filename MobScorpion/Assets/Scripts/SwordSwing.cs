@@ -32,6 +32,14 @@ public class SwordSwing : MonoBehaviour
         }
     }
 
+public void SwingSwordButton()
+{
+    if (!isSwinging && !playerMovement.isAttacking)
+    {
+        StartCoroutine(SwingSword());
+    }
+}
+
 IEnumerator SwingSword()
 {
     isSwinging = true;

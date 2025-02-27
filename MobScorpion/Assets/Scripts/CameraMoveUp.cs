@@ -8,22 +8,25 @@ public class CameraMoveUp : MonoBehaviour
     public Transform player1;
     public float targetY;
     public float moveSpeed = 2f;
-    public float followSpeed = 1f; // Speed when following player
-    public float minX; // Left boundary
-    public float maxX; // Right boundary
-    public float minY; // Y-axis limit (prevents camera from going too low)
+    public float followSpeed = 1f;
+    public float minX;
+    public float maxX;
+    public float minY;
+    public float sideMargin = 1f;
 
-    public float sideMargin = 1f; // Customizable margin for left/right edges
+    public GameObject joystickObject;
+    public float maxJoystickOpacityChild1 = 1f;
+    public float maxJoystickOpacityChild2 = 0.5f;
+    public float fadeSpeed = 1f;
 
-    public GameObject joystickObject; // UI Joystick (Parent)
-    public float maxJoystickOpacityChild1 = 1f; // Max opacity for the first child
-    public float maxJoystickOpacityChild2 = 0.5f; // Max opacity for the second child
-    public float fadeSpeed = 1f; // Speed of the fade-in effect
+    public GameObject[] buttonObjects; // Array for the 3 buttons
+    public float maxButtonOpacity = 1f; // Opacity for buttons
 
     private PlayerMovement playerMovement1;
     private bool isMoving = true;
     private bool followPlayer = false;
-    private Image[] joystickChildrenImages; // Array to store all child Image components
+    private Image[] joystickChildrenImages;
+    private Image[] buttonImages; // Array to store Image components of the buttons
 
     private void Start()
     {
@@ -34,21 +37,35 @@ public class CameraMoveUp : MonoBehaviour
 
         if (joystickObject != null)
         {
-            // Get all child Image components
             joystickChildrenImages = joystickObject.GetComponentsInChildren<Image>(true);
-
-            // Set all child images to fully transparent at start (excluding the parent)
             foreach (Image child in joystickChildrenImages)
             {
-                // Skip the parent (joystickObject) and only affect the children
                 if (child.transform != joystickObject.transform)
                 {
                     Color color = child.color;
-                    color.a = 0f;
+                    color.a = 0f; // Start with 0 opacity
                     child.color = color;
                 }
             }
         }
+
+        // Store button images and initialize opacity to 0
+        List<Image> tempButtonImages = new List<Image>();
+        foreach (GameObject button in buttonObjects)
+        {
+            if (button != null)
+            {
+                Image buttonImage = button.GetComponentInChildren<Image>(); // Get the Image component inside the button
+                if (buttonImage != null)
+                {
+                    Color color = buttonImage.color;
+                    color.a = 0f; // Start fully transparent
+                    buttonImage.color = color;
+                    tempButtonImages.Add(buttonImage);
+                }
+            }
+        }
+        buttonImages = tempButtonImages.ToArray();
     }
 
     private void Update()
@@ -78,14 +95,17 @@ public class CameraMoveUp : MonoBehaviour
                 playerMovement1.enabled = true;
 
             if (joystickChildrenImages != null)
-                StartCoroutine(FadeInJoystickChildren()); // Start joystick fade-in
+                StartCoroutine(FadeInJoystickChildren()); 
+
+            if (buttonImages != null)
+                StartCoroutine(FadeInButtonImages()); // Use FadeInButtonImages for button images
         }
     }
 
     private void FollowPlayer()
     {
         float clampedX = Mathf.Clamp(player1.position.x, minX, maxX);
-        float clampedY = Mathf.Max(player1.position.y, minY); // Prevents camera from moving below minY
+        float clampedY = Mathf.Max(player1.position.y, minY);
 
         Vector3 targetPosition = new Vector3(clampedX, clampedY, transform.position.z);
         transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
@@ -112,52 +132,55 @@ public class CameraMoveUp : MonoBehaviour
         
         while (!allFaded)
         {
-            allFaded = true; // Assume all are faded unless proven otherwise
+            allFaded = true;
 
             for (int i = 0; i < joystickChildrenImages.Length; i++)
             {
                 Image child = joystickChildrenImages[i];
-                if (child.transform != joystickObject.transform) // Skip parent
+                if (child.transform != joystickObject.transform)
                 {
                     Color color = child.color;
+                    float targetOpacity = (i == 0) ? maxJoystickOpacityChild1 : maxJoystickOpacityChild2;
 
-                    // Determine max opacity based on the child index
-                    float maxOpacity1 = maxJoystickOpacityChild1;
-                    float maxOpacity2 = maxJoystickOpacityChild2;
-
-                    if (color.a < maxOpacity1)
+                    if (color.a < targetOpacity)
                     {
                         color.a += Time.deltaTime * fadeSpeed;
                         child.color = color;
-                        allFaded = false; // Still fading
-                    }
-                    if (color.a < maxOpacity2)
-                    {
-                        color.a += Time.deltaTime * fadeSpeed;
-                        child.color = color;
-                        allFaded = false; // Still fading
+                        allFaded = false;
                     }
                 }
             }
             yield return null;
         }
+    }
 
-        // Ensure all elements reach their respective full opacity
-        for (int i = 0; i < joystickChildrenImages.Length; i++)
+    private IEnumerator FadeInButtonImages()
+    {
+        bool allFaded = false;
+
+        while (!allFaded)
         {
-            Image child = joystickChildrenImages[i];
-            if (child.transform != joystickObject.transform) // Skip parent
+            allFaded = true;
+
+            foreach (Image buttonImage in buttonImages)
             {
-                Color color = child.color;
-
-                // Determine max opacity based on the child index
-                float maxOpacity1 = maxJoystickOpacityChild1;
-                float maxOpacity2 = maxJoystickOpacityChild2;
-
-                color.a = maxOpacity1;
-                color.a = maxOpacity2;
-                child.color = color;
+                Color color = buttonImage.color;
+                if (color.a < maxButtonOpacity)
+                {
+                    color.a += Time.deltaTime * fadeSpeed;
+                    buttonImage.color = color;
+                    allFaded = false;
+                }
             }
+            yield return null;
+        }
+
+        // Ensure all elements reach full opacity (if needed)
+        foreach (Image buttonImage in buttonImages)
+        {
+            Color color = buttonImage.color;
+            color.a = maxButtonOpacity;
+            buttonImage.color = color;
         }
     }
 }
