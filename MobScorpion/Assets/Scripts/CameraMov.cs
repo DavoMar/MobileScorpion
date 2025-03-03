@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraMov : MonoBehaviour
 {
-    public bool moving = false;     //To be used later for stop and go implementation
+    public Transform player1;
     public float camSpeed = 1f;
+    public float followSpeed = 1f;
     public float boundHeight = 200f;
+    public float minY; // Prevents camera from going too low
+
     public CamTrigger startOne;
     public CamTrigger startTwo;
     public CamTrigger startThree;
@@ -15,73 +19,80 @@ public class CameraMov : MonoBehaviour
     public CamTrigger stopTwo;
     public CamTrigger stopThree;
     public CamTrigger stopFour;
-    private bool startContact = false;
+
+    private bool moving = false;
+    private bool followPlayer = false;
     private bool stopContact = false;
-    
-    // Start is called before the first frame update
-    void Start()
+
+    private void Update()
     {
-        
+        CheckTriggers();
+
+        if (followPlayer)
+        {
+            FollowPlayer();
+        }
+        else if (moving)
+        {
+            MoveCameraUp();
+        }
     }
 
-    void startMoving(){
+    private void CheckTriggers()
+    {
+        // Start movement triggers
+        if (startOne.moveCam())
+        {
+            StartFollowing(110);
+        }
+        else if (startTwo.moveCam())
+        {
+            StartFollowing(230);
+        }
+        else if (startThree.moveCam())
+        {
+            StartFollowing(460);
+        }
+        else if (startFour.moveCam())
+        {
+            StartFollowing(495);
+        }
+
+        // Stop movement triggers
+        if (stopOne.moveCam() || stopTwo.moveCam() || stopThree.moveCam() || stopFour.moveCam())
+        {
+            StopFollowing();
+        }
+    }
+
+    private void StartFollowing(float newBoundHeight)
+    {
+        boundHeight = newBoundHeight;
         moving = true;
-    }
-
-    void increaseMax(float x){
-        boundHeight += x;
-    }
-    void stopMoving(){
-        moving = false;
-    }
-
-    
-    // Update is called once per frame
-    void Update()
-    {
-        if (startOne.moveCam()){
-        startContact = true;
+        followPlayer = true;
         stopContact = false;
-        boundHeight = 110;
-        }
-        else if( startTwo.moveCam()){
-           startContact = true;
-            stopContact = false;
-            boundHeight = 230; 
-        }
-        else if( startThree.moveCam()){
-           startContact = true;
-            stopContact = false;
-            boundHeight = 460; 
-        }
-        else if( startFour.moveCam()){
-           startContact = true;
-            stopContact = false;
-            boundHeight = 495; 
-        }
+    }
 
-        if(startContact == true){
-            startMoving();
-        }
-
-        /*if (stopOne.moveCam() || stopTwo.moveCam() || stopThree.moveCam() || stopFour.moveCam()){
+    private void StopFollowing()
+    {
+        moving = false;
+        followPlayer = false;
         stopContact = true;
-        startContact = false;
-        }*/
+    }
 
-        if (stopContact == true){
-            stopMoving();
+    private void MoveCameraUp()
+    {
+        Vector3 newPosition = transform.position + Vector3.up * camSpeed * Time.deltaTime;
+        if (newPosition.y <= boundHeight)
+        {
+            transform.position = newPosition;
         }
+    }
 
-        if(moving == true){
-        Vector3 newPostion = transform.position + Vector3.up * camSpeed * Time.deltaTime;
-        if (newPostion.y <= boundHeight && moving){
-            transform.position = newPostion;
-        }
-        }
-        
-        //stopContact = false;
-        //startContact = false;
-
+    private void FollowPlayer()
+    {
+        float clampedY = Mathf.Max(player1.position.y, minY); // Prevents the camera from going below minY
+        Vector3 targetPosition = new Vector3(transform.position.x, clampedY, transform.position.z);
+        transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
     }
 }
