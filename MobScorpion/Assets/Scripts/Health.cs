@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
+using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
@@ -19,13 +19,33 @@ public class Health : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     public float opacity = 0.6f;
     public CircleCollider2D collider;
-    
+    public Slider healthSlider;
+    private Queue<Vector3> positionHistory = new Queue<Vector3>();
+    private float positionRecordInterval = 0.5f;
 
     void Start()
     {
         currHealth = maxHealth;
         mainCamera = Camera.main;
-        
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currHealth;
+        }
+        StartCoroutine(RecordPosition());
+    }
+
+    private IEnumerator RecordPosition()
+    {
+        while (true)
+        {
+            if (positionHistory.Count >= 4) // Store last 2 seconds (4 records at 0.5s interval)
+            {
+                positionHistory.Dequeue();
+            }
+            positionHistory.Enqueue(transform.position);
+            yield return new WaitForSeconds(positionRecordInterval);
+        }
     }
 
     public int GetHealth()
@@ -41,30 +61,38 @@ public class Health : MonoBehaviour
         currHealth -= amt;
         lastHitByPlayerID = playerID;
 
-        print(gameObject.name + " remaining health: " + currHealth);
+        if (healthSlider != null)
+        {
+            healthSlider.value = currHealth;
+        }
 
         if (currHealth <= 0)
         {     
-            Die();
+            HandleDeath();
             return false;
         }
         return true;
     }
 
-    private IEnumerator immunityTimer(){
+    private IEnumerator ImmunityTimer()
+    {
         yield return new WaitForSeconds(immuneTime);
         immune = false;
         collider.enabled = true;
         spriteRenderer.color = new Color(1f, 1f, 1f, 1f);
     }
 
-
-    public void disable(){
-            immune = true;
-            collider.enabled = false;
-            spriteRenderer.color = new Color(1f, 1f, 1f, opacity);
-            currHealth = maxHealth;
-            StartCoroutine(immunityTimer());
+    public void Disable()
+    {
+        immune = true;
+        collider.enabled = false;
+        spriteRenderer.color = new Color(1f, 1f, 1f, opacity);
+        currHealth = maxHealth;
+        if (healthSlider != null)
+        {
+            healthSlider.value = currHealth;
+        }
+        StartCoroutine(ImmunityTimer());
     }
 
     public bool TakeDamage(int amt, List<string> targets)
@@ -81,58 +109,74 @@ public class Health : MonoBehaviour
         currHealth += amt;
         if (currHealth > maxHealth)
             currHealth = maxHealth;
+        
+        if (healthSlider != null)
+        {
+            healthSlider.value = currHealth;
+        }
     }
 
-
-    public void Die()
+    public void HandleDeath()
     {
-        // Only spawn a coin if this is an enemy
         if (isEnemy && lastHitByPlayerID != 0)
         {
             GameObject coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);
             coin.GetComponent<Coin>().Initialize(lastHitByPlayerID);
             Destroy(gameObject);
-        }   
-            if(isEnemy == false){
-            totalLives.reduceLives();
-            if(!totalLives.isEmpty()){
-                disable();
-            }
-            if(totalLives.isEmpty()){
+        }
+        else if (!isEnemy)
+        {
+            totalLives.reduceLives(); // Reduce player lives when health reaches zero
+            if (totalLives.isEmpty())
+            {
                 totalLives.restartGame();
-            }
-            if(immune){
-
-            }
-            
-            else{
-            Destroy(gameObject);
-            }
             }
             else
             {
-                Destroy (gameObject);
+                Respawn();
             }
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    public void Respawn(int r) {
-        
-    /*Vector3 viewportPosition = new Vector3(7.0f, -0.5f, mainCamera.nearClipPlane);
-    int originalLayer = gameObject.layer;
-    if(r == 1){
-        viewportPosition = new Vector3(1.0f, -0.5f, mainCamera.nearClipPlane);
-    }
-    Vector3 respawnPosition = mainCamera.ViewportToWorldPoint(viewportPosition);
-    respawnPosition.z = transform.position.z;
-    respawnPosition += respawnOffset;
-    transform.position = respawnPosition;
-    Vector3 currentScale = transform.localScale;
-    gameObject.layer = originalLayer;
-    transform.localScale = currentScale;*/
-    
+    public void Respawn()
+    {
+        if (positionHistory.Count > 0)
+        {
+            Vector3 respawnPosition = positionHistory.Peek(); // Get position 2 seconds before death
+            transform.position = respawnPosition;
+        }
+        currHealth = maxHealth;
+        if (healthSlider != null)
+        {
+            healthSlider.value = currHealth;
+        }
+        StartCoroutine(FadeIn());
     }
 
-    public void zeroHealth(){
+    private IEnumerator FadeIn()
+    {
+        float duration = 2f;
+        float elapsedTime = 0f;
+        Color color = spriteRenderer.color;
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, elapsedTime / duration);
+            spriteRenderer.color = new Color(color.r, color.g, color.b, alpha);
+            yield return null;
+        }
+    }
+
+    public void ZeroHealth()
+    {
         currHealth = 0;
+        if (healthSlider != null)
+        {
+            healthSlider.value = currHealth;
+        }
     }
 }

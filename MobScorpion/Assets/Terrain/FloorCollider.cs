@@ -9,7 +9,7 @@ public class FloorCollider : MonoBehaviour
         Health otherHealth = other.GetComponent<Health> ();
         if (otherHealth)
         {
-            otherHealth.Die ();
+            otherHealth.HandleDeath();
         }
     } 
 }

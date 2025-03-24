@@ -90,9 +90,15 @@ public class CameraMov : MonoBehaviour
     }
 
     private void FollowPlayer()
+{
+    if (player1 == null)
     {
-        float clampedY = Mathf.Max(player1.position.y, minY); // Prevents the camera from going below minY
-        Vector3 targetPosition = new Vector3(transform.position.x, clampedY, transform.position.z);
-        transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
+        Debug.LogWarning("Player1 reference is missing!");
+        return;
     }
+
+    float clampedY = Mathf.Max(player1.position.y, minY); // Prevents the camera from going below minY
+    Vector3 targetPosition = new Vector3(transform.position.x, clampedY, transform.position.z);
+    transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
+}
 }

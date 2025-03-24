@@ -1,59 +1,118 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerBuy : MonoBehaviour
 {
-    public int playerID; // Unique ID to differentiate players (e.g., 1 for Player 1, 2 for Player 2)
-    public KeyCode buyKey = KeyCode.E; // The key to press to buy an item
-    public float buyRange = 2f; // Maximum distance from the item to allow purchase
+    public int playerID; // Unique ID to differentiate players
+    public float buyRange = 2f; // Maximum distance to allow purchase
+    public GameObject buyButtonPrefab; // UI button prefab
+    public GameObject[] canvasesToDisable; // Array of canvases to disable
+    public Sprite buyableSprite; // Green sprite for buyable state
+    public Sprite notBuyableSprite; // Red sprite for not buyable state
 
     private CoinManager coinManager;
+    private GameObject buyButton;
+    private BuyableItem nearbyItem;
+    private Image buttonImage;
 
     void Start()
     {
-        coinManager = FindObjectOfType<CoinManager>(); // Reference to the CoinManager
+        coinManager = FindObjectOfType<CoinManager>();
+        
+        // Instantiate the button but keep it hidden initially
+        if (buyButtonPrefab)
+        {
+            buyButton = Instantiate(buyButtonPrefab, FindObjectOfType<Canvas>().transform);
+            buyButton.GetComponent<Button>().onClick.AddListener(TryToBuyItem);
+            buttonImage = buyButton.GetComponent<Image>();
+            buyButton.SetActive(false);
+        }
     }
 
     void Update()
     {
-        // Check if the player presses the buy key
-        if (Input.GetKeyDown(buyKey))
-        {
-            TryToBuyItem();
-        }
+        DetectNearbyItem();
     }
 
-    private void TryToBuyItem()
+    private void DetectNearbyItem()
     {
-        // Find all nearby items with a collider in a specified range
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, buyRange);
-
+        nearbyItem = null;
+        
         foreach (Collider2D collider in colliders)
         {
-            // Check if the item has a BuyableItem component
             BuyableItem item = collider.GetComponent<BuyableItem>();
             if (item != null)
             {
-                int playerCoins = (playerID == 1) ? coinManager.player1Coins : coinManager.player2Coins;
-
-                // Check if the player has enough coins to buy the item
-                if (playerCoins >= item.cost)
-                {
-                    // Deduct the item cost and apply the item's effect
-                    coinManager.AddCoins(playerID, -item.cost);
-                    item.ApplyEffect(this); // Pass the player as a parameter to apply the item's effect
-                    Debug.Log("Player " + playerID + " bought an item!");
-
-                    // Optionally, destroy the item if it's a one-time purchase
-                    Destroy(item.gameObject);
-                    break; // Stop after purchasing one item
-                }
-                else
-                {
-                    Debug.Log("Not enough coins to buy this item.");
-                }
+                nearbyItem = item;
+                break;
             }
+        }
+        
+        // Show or hide the buy button based on proximity to an item and update sprite
+        if (buyButton)
+        {
+            bool buttonActive = nearbyItem != null;
+            buyButton.SetActive(buttonActive);
+            UpdateButtonSprite();
+            ToggleCanvases(!buttonActive);
+        }
+    }
+
+    private void UpdateButtonSprite()
+    {
+        if (nearbyItem == null || buttonImage == null) return;
+        
+        int playerCoins = (playerID == 1) ? coinManager.player1Coins : coinManager.player2Coins;
+        
+        if (playerCoins >= nearbyItem.cost)
+        {
+            buttonImage.sprite = buyableSprite; // Set to green sprite if affordable
+        }
+        else
+        {
+            buttonImage.sprite = notBuyableSprite; // Set to red sprite if not affordable
+        }
+    }
+
+    private void ToggleCanvases(bool state)
+    {
+        foreach (GameObject canvas in canvasesToDisable)
+        {
+            if (canvas != null)
+            {
+                canvas.SetActive(state);
+            }
+        }
+    }
+
+    public void TryToBuyItem()
+    {
+        if (nearbyItem == null) return;
+        
+        int playerCoins = (playerID == 1) ? coinManager.player1Coins : coinManager.player2Coins;
+
+        if (playerCoins >= nearbyItem.cost)
+        {
+            coinManager.AddCoins(playerID, -nearbyItem.cost);
+            nearbyItem.ApplyEffect(this);
+            Debug.Log("Player " + playerID + " bought an item!");
+            Destroy(nearbyItem.gameObject);
+            
+            // Hide the button after purchase
+            if (buyButton)
+            {
+                buyButton.SetActive(false);
+            }
+            
+            // Re-enable the canvases after purchase
+            ToggleCanvases(true);
+        }
+        else
+        {
+            Debug.Log("Not enough coins to buy this item.");
         }
     }
 }
