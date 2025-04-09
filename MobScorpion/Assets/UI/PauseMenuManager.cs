@@ -35,4 +35,3 @@ public class PauseMenuManager : MonoBehaviour
             else Time.timeScale = 0f; 
     }
 }
-
