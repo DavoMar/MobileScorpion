@@ -8,7 +8,9 @@ public class SaveData
     public string sceneName;
     public Vector3 playerPosition;
     public int playerHealth;
-
+    public int playerLives;
+    public int playerCoins;
+    public Vector3 cameraPosition;
     public List<EnemyData> enemies = new List<EnemyData>();
 }
 
@@ -18,3 +20,4 @@ public class EnemyData
     public Vector3 position;
     public int health;
 }
+

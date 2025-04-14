@@ -1,27 +1,51 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections.Generic;
 
-public class GameBootstrap : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public Health player;
-    
-    void Start()
+    public Camera MainCamera;
+
+    void OnApplicationPause(bool pause)
     {
+        if (pause && SaveZoneTrigger.canSave)
+        {
+            SaveGameData();
+        }
+    }
+
+    void OnApplicationQuit()
+    {
+        if (SaveZoneTrigger.canSave)
+        {
+            SaveGameData();
+        }
+    }
+
+    IEnumerator Start()
+    {
+        yield return new WaitForSeconds(0.1f); // Give time for everything to initialize
+
         string currentScene = SceneManager.GetActiveScene().name;
 
-        // Don't load save for intro scene or first zone of scene 2
-        if ((currentScene == "Temple of The Scorpion") || (currentScene == "Main" && IsFirstZone()) || !SaveSystem.SaveExists())
+        if (!SaveSystem.SaveExists())
+            yield break;
+
+        if ((currentScene == "Temple of The Scorpion") || (currentScene == "Main" && !SaveZoneTrigger.canSave))
         {
-            SaveSystem.DeleteSave(); // Clear any old saves
-            return;
+            SaveSystem.DeleteSave();
+            yield break;
         }
 
         LoadGame();
     }
 
-    void OnApplicationQuit()
+        public void SaveGameManually()
     {
+        if (!SaveZoneTrigger.canSave) return;
+
         List<Health> enemies = new List<Health>();
         foreach (GameObject go in GameObject.FindGameObjectsWithTag("Enemy"))
         {
@@ -29,34 +53,40 @@ public class GameBootstrap : MonoBehaviour
             if (h != null) enemies.Add(h);
         }
 
-        SaveSystem.SaveGame(player, enemies);
+        SaveSystem.SaveGame(player, enemies, MainCamera);
+        Debug.Log("Manual save triggered from pause menu.");
+    }
+
+    void SaveGameData()
+    {
+        List<Health> enemies = new List<Health>();
+        foreach (GameObject go in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            Health h = go.GetComponent<Health>();
+            if (h != null)
+                enemies.Add(h);
+        }
+
+        SaveSystem.SaveGame(player, enemies, MainCamera);
     }
 
     void LoadGame()
     {
-        var data = SaveSystem.LoadGame();
+        SaveData data = SaveSystem.LoadGame();
         if (data == null) return;
 
-        // Load player
         player.transform.position = data.playerPosition;
-        player.HealDamage(data.playerHealth - player.GetHealth()); // Adjust health
+        player.currHealth = data.playerHealth;
 
-        // Load enemies
-        GameObject[] enemyObjects = GameObject.FindGameObjectsWithTag("Enemy");
+        Lives lives = player.GetComponent<Lives>();
+        if (lives != null)
+            lives.currentLives = data.playerLives;
 
-        for (int i = 0; i < Mathf.Min(enemyObjects.Length, data.enemies.Count); i++)
-        {
-            var h = enemyObjects[i].GetComponent<Health>();
-            if (h != null)
-            {
-                enemyObjects[i].transform.position = data.enemies[i].position;
-                h.HealDamage(data.enemies[i].health - h.GetHealth());
-            }
-        }
-    }
+        PlayerBuy buy = player.GetComponent<PlayerBuy>();
+        if (buy != null && buy.coinManager != null)
+            buy.coinManager.player1Coins = data.playerCoins;
 
-    private bool IsFirstZone()
-    {
-        return false; 
+        if (MainCamera != null)
+            MainCamera.transform.position = data.cameraPosition;
     }
 }

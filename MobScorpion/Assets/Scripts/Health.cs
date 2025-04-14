@@ -8,7 +8,7 @@ public class Health : MonoBehaviour
     [SerializeField] private int maxHealth = 10;
     [SerializeField] private bool isEnemy = false;  // Set this to true only for enemies
 
-    private int currHealth;
+    public int currHealth;
     private int lastHitByPlayerID;
     private bool immune = false;
     public GameObject coinPrefab;

@@ -12,7 +12,7 @@ public class PlayerBuy : MonoBehaviour
     public Sprite buyableSprite; // Green sprite for buyable state
     public Sprite notBuyableSprite; // Red sprite for not buyable state
 
-    private CoinManager coinManager;
+    public CoinManager coinManager;
     private GameObject buyButton;
     private BuyableItem nearbyItem;
     private Image buttonImage;

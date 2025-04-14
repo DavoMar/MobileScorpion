@@ -6,18 +6,34 @@ public static class SaveSystem
 {
     private static string path = Application.persistentDataPath + "/save.json";
 
-    public static void SaveGame(Health player, List<Health> enemies)
+    public static void SaveGame(Health player, List<Health> enemies, Camera cam)
     {
         SaveData data = new SaveData();
         data.sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         data.playerPosition = player.transform.position;
-        data.playerHealth = player.GetHealth();
+        data.playerHealth = player.currHealth;
+
+        // Lives
+        Lives lives = player.GetComponent<Lives>();
+        if (lives != null)
+            data.playerLives = lives.currentLives;
+
+        // Coins
+        PlayerBuy buy = player.GetComponent<PlayerBuy>();
+        if (buy != null && buy.coinManager != null)
+            data.playerCoins = buy.coinManager.player1Coins;
+
+        // Camera
+        if (cam != null)
+            data.cameraPosition = cam.transform.position;
 
         foreach (var enemy in enemies)
         {
-            EnemyData ed = new EnemyData();
-            ed.position = enemy.transform.position;
-            ed.health = enemy.GetHealth();
+            EnemyData ed = new EnemyData
+            {
+                position = enemy.transform.position,
+                health = enemy.currHealth
+            };
             data.enemies.Add(ed);
         }
 

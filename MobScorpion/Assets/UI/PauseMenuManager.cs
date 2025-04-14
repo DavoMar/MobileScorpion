@@ -21,9 +21,18 @@ public class PauseMenuManager : MonoBehaviour
         }
     }
 
-    public void exitGame(){
-        Application.Quit();
+    public void exitGame()
+{
+    // Optionally, pause time and/or hide menu items here
+    GameManager bootstrap = FindObjectOfType<GameManager>();
+    if (bootstrap != null)
+    {
+        bootstrap.SaveGameManually(); // Call a manual save method you create in GameManager
     }
+
+    Application.Quit(); // Closes the app
+}
+
 
     public void pauseorResumeGame(){
             foreach (GameObject g in menuItems)
