@@ -1393,7 +1393,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1751504023}
         m_TargetAssemblyTypeName: PauseMenuManager, Assembly-CSharp
-        m_MethodName: pauseorResumeGame
+        m_MethodName: TogglePauseMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3469,8 +3469,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerID: 2
-  buyKey: 46
   buyRange: 2
+  buyButtonPrefab: {fileID: 0}
+  canvasesToDisable: []
+  buyableSprite: {fileID: 0}
+  notBuyableSprite: {fileID: 0}
+  coinManager: {fileID: 0}
 --- !u!114 &214741503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3485,12 +3489,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 2000000
   isEnemy: 0
+  currHealth: 0
   coinPrefab: {fileID: 0}
   totalLives: {fileID: 0}
   mainCamera: {fileID: 0}
   spriteRenderer: {fileID: 0}
   opacity: 0.6
   collider: {fileID: 0}
+  healthSlider: {fileID: 0}
 --- !u!58 &214741504
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -4643,7 +4649,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1751504023}
         m_TargetAssemblyTypeName: PauseMenuManager, Assembly-CSharp
-        m_MethodName: pauseorResumeGame
+        m_MethodName: TogglePauseMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6026,7 +6032,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1751504023}
         m_TargetAssemblyTypeName: PauseMenuManager, Assembly-CSharp
-        m_MethodName: exitGame
+        m_MethodName: OnExitWithoutSave
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -72854,6 +72860,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1822205931}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1637849161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1637849163}
+  - component: {fileID: 1637849162}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1637849162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1637849161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a60a6acd5b9011f418b878e05d86324c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1734151909}
+  MainCamera: {fileID: 1429755828}
+--- !u!4 &1637849163
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1637849161}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.169143, y: 226.21881, z: -0.042385634}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1649898186
 GameObject:
   m_ObjectHideFlags: 0
@@ -74414,8 +74466,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerID: 1
-  buyKey: 101
   buyRange: 2
+  buyButtonPrefab: {fileID: 0}
+  canvasesToDisable: []
+  buyableSprite: {fileID: 0}
+  notBuyableSprite: {fileID: 0}
+  coinManager: {fileID: 0}
 --- !u!114 &1734151909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74430,12 +74486,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 2000000
   isEnemy: 0
+  currHealth: 0
   coinPrefab: {fileID: 0}
   totalLives: {fileID: 0}
   mainCamera: {fileID: 0}
   spriteRenderer: {fileID: 0}
   opacity: 0.6
   collider: {fileID: 0}
+  healthSlider: {fileID: 0}
 --- !u!58 &1734151910
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -74759,6 +74817,7 @@ MonoBehaviour:
   - {fileID: 453864566}
   - {fileID: 1979222138}
   - {fileID: 1582315988}
+  savePromptPanel: {fileID: 0}
 --- !u!4 &1751504024
 Transform:
   m_ObjectHideFlags: 0
@@ -90139,3 +90198,4 @@ SceneRoots:
   - {fileID: 323646769}
   - {fileID: 8540010}
   - {fileID: 1535301173}
+  - {fileID: 1637849163}

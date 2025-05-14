@@ -14,7 +14,7 @@ public class SaveZoneTrigger : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player1"))
         {
             canSave = true;
             Debug.Log("Player exited save zone.");

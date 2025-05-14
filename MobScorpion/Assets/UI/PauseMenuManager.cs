@@ -4,43 +4,77 @@ using UnityEngine;
 
 public class PauseMenuManager : MonoBehaviour
 {
-
     [SerializeField] private List<GameObject> menuItems;
+    [SerializeField] private GameObject savePromptPanel;
 
     void Update()
     {
-        if (Input.GetKeyDown (KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            foreach (GameObject g in menuItems)
-            {
-                if (g)
-                    g.SetActive (!g.activeSelf);
-            }
-            if (Time.timeScale == 0f)   Time.timeScale = 1f;
-            else Time.timeScale = 0f; 
+            TogglePauseMenu();
         }
     }
 
-    public void exitGame()
-{
-    // Optionally, pause time and/or hide menu items here
-    GameManager bootstrap = FindObjectOfType<GameManager>();
-    if (bootstrap != null)
+    public void TogglePauseMenu()
     {
-        bootstrap.SaveGameManually(); // Call a manual save method you create in GameManager
+        if(savePromptPanel != null){
+        savePromptPanel.SetActive(false);
+        }
+        
+        foreach (GameObject g in menuItems)
+        {
+            if (g) g.SetActive(!g.activeSelf);
+        }
+
+        Time.timeScale = (Time.timeScale == 0f) ? 1f : 0f;
     }
 
-    Application.Quit(); // Closes the app
+    
+    public void ShowSavePrompt()
+    {
+        savePromptPanel.SetActive(true);
+    }
+
+    public void OnSaveAndExit()
+{
+    StartCoroutine(SaveAndQuitCoroutine());
+}
+
+    public void OnExitWithoutSave()
+    {
+        Application.Quit();
+    }
+
+    private IEnumerator SaveAndQuitCoroutine()
+{
+    GameObject playerObj = GameObject.FindWithTag("Player1");
+    if (playerObj == null)
+    {
+        Debug.LogError("Player1 not found");
+        yield break;
+    }
+
+    Health player = playerObj.GetComponent<Health>();
+    Camera cam = Camera.main;
+
+    List<Health> enemies = new List<Health>();
+    foreach (GameObject go in GameObject.FindGameObjectsWithTag("Enemy"))
+    {
+        var h = go.GetComponent<Health>();
+        if (h != null) enemies.Add(h);
+    }
+
+    SaveSystem.SaveGame(player, enemies, cam);
+    Debug.Log("Saved game, now quitting");
+
+#if UNITY_EDITOR
+    UnityEditor.EditorApplication.isPlaying = false;
+#else
+    Application.Quit();
+#endif
+
+    yield return null;
 }
 
 
-    public void pauseorResumeGame(){
-            foreach (GameObject g in menuItems)
-            {
-                if (g)
-                    g.SetActive (!g.activeSelf);
-            }
-            if (Time.timeScale == 0f)   Time.timeScale = 1f;
-            else Time.timeScale = 0f; 
-    }
 }
